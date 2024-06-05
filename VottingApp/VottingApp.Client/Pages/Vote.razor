@@ -1,0 +1,147 @@
+﻿@page "/voteApp"
+@using Shared
+@rendermode InteractiveWebAssembly
+
+
+<div class="container">
+    <h4>Vote App</h4>
+    <div class="row">
+        <!-- Voters section -->
+        <div class="col-md-6 text-center">
+            <h5>Voters</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Has Voted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                     @if (voters is not null)
+                {
+                        foreach (var voter in voters)
+                        {
+                            <tr>
+                                <td>@voter.Id</td>
+                                <td>@voter.Name</td>
+                                <td>@voter.HasVoted</td>
+                            </tr>
+                        }}
+                        
+                </tbody>
+            </table>
+        </div>
+        <!-- Candidates section -->
+        <div class="col-md-6 text-center">
+            <h5>Candidates</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Votes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                     @if (candidates is not null)
+                {
+                        foreach (var candidate in candidates)
+                        {
+                            <tr>
+                                <td>@candidate.Id</td>
+                                <td>@candidate.Name</td>
+                                <td>@candidate.Count</td>
+                            </tr>
+                        }}
+                        </tbody>
+            </table>
+        </div>
+    </div>
+    <hr />
+    <!-- Voting form -->
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <label for="voteSelect">I vote for:</label>
+            <select class="form-control" id="voteSelect" @bind="VoterId">
+                @if (voters is not null)
+                {
+                    foreach (var voter in voters)
+                    {
+                        <option value="@voter.Id">@voter.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-4 text-center">
+            <label for="CandateSelect">I vote for:</label>
+            <select class="form-control" id="CandateSelect" @bind="CandateId">
+                @if (candidates is not null)
+                {
+                    foreach (var candidate in candidates)
+                    {
+                        <option value="@candidate.Id">@candidate.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-4 text-center">
+            <button type="submit" class="btn btn-primary" @onclick="SubmitVote">Submit</button>
+        </div>
+        <b class="danger">@mesage</b>
+
+    </div>
+</div>
+<hr />
+
+@code {
+
+    public int VoterId { get; set; }
+    public int CandateId { get; set; }
+    public List<Voter> voters { get; set; }
+    public List<Candidate> candidates { get; set; }
+    private string mesage = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        mesage = string.Empty;
+        voters = Enumerable.Range(1, 10).Select(a => new Voter
+            {
+                Id = a,
+                HasVoted = false,
+                Name = $"Voter {a}"
+            }).ToList();
+        candidates = Enumerable.Range(1, 10).Select(a => new Candidate
+            {
+                Id = a,
+                Name = $"Candidate {a}",
+                Count = 0
+
+            }).ToList();
+        VoterId = voters.FirstOrDefault().Id;
+        CandateId = candidates.FirstOrDefault().Id;
+
+    }
+    public void SubmitVote()
+    {
+        mesage = string.Empty;
+        var tempvoter = voters.FirstOrDefault(a => a.Id == VoterId);
+        if (tempvoter is null) return;
+        if (!tempvoter.HasVoted)
+        {
+
+            tempvoter.HasVoted = true;
+            var candidate = candidates.FirstOrDefault(a => a.Id == CandateId);
+            if (candidate is not null)
+            {
+                candidate.Count++;
+            }
+        }
+        else
+        {
+            mesage = "Already voted";
+        }
+        StateHasChanged();
+    }
+    }
+
+
